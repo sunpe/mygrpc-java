@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.sunpe.mygrpc.spring.server.GrpcServerAutoConfig,\
+com.sunpe.mygrpc.spring.client.GrpcClientAutoConfig

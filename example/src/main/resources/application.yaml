@@ -1,0 +1,12 @@
+mygrpc:
+  server:
+    registry: zk://127.0.0.1:2181
+    group: test_group
+    port: 9000
+    service-discovery-class: com.sunpe.mygrpc.zookeeper.ZkServiceDiscovery
+
+  client:
+    registry: zk://127.0.0.1:2181
+    group: test_group
+    service-discovery-class: com.sunpe.mygrpc.zookeeper.ZkServiceDiscovery
+

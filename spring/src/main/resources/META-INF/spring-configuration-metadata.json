@@ -1,0 +1,40 @@
+{
+  "group": [
+    {
+      "name": "com.sunpe.mygrpc",
+      "type": "com.sunpe.mygrpc.spring.client.ClientProperties",
+      "sourceType": "com.sunpe.mygrpc.spring.client.ClientProperties"
+    },
+    {
+      "name": "com.sunpe.mygrpc",
+      "type": "com.sunpe.mygrpc.spring.client.ServerProperties",
+      "sourceType": "com.sunpe.mygrpc.spring.client.ServerProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "mygrpc.server.serviceDiscoveryClass",
+      "type": "java.lang.String",
+      "description": "the implement class of service discovery implement",
+      "sourceType": "com.sunpe.mygrpc.spring.client.ServerProperties"
+    },
+    {
+      "name": "mygrpc.server.registry",
+      "type": "java.lang.String",
+      "description": "the address of service discovery",
+      "sourceType": "com.sunpe.mygrpc.spring.client.ServerProperties"
+    },
+    {
+      "name": "mygrpc.server.port",
+      "type": "java.lang.Integer",
+      "description": "the port of grpc server use",
+      "sourceType": "com.sunpe.mygrpc.spring.client.ServerProperties"
+    },
+    {
+      "name": "mygrpc.server.group",
+      "type": "java.lang.String",
+      "description": "the group name of grpc service",
+      "sourceType": "com.sunpe.mygrpc.spring.client.ServerProperties"
+    }
+  ]
+}
