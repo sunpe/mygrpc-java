@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
-public @interface GrpcStub {
+public @interface GrpcClient {
 
     /**
      * the grpc service's name want to call

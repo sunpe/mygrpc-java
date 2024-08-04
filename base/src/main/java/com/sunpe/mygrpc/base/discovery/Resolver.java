@@ -4,18 +4,28 @@ import com.sunpe.mygrpc.base.vo.ServiceInstance;
 import io.grpc.Attributes;
 import io.grpc.EquivalentAddressGroup;
 import io.grpc.NameResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Resolver extends NameResolver {
     private final URI target;
     private final String serviceName;
     private final String group;
     private final Discovery discovery;
+    private volatile boolean started;
+
+    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     Resolver(URI uri, Args args) throws Exception {
         // target uri scheme://${ip}:${port},${ip}:${port}.../${group}/${service_name}/
@@ -34,7 +44,28 @@ public class Resolver extends NameResolver {
     }
 
     @Override
-    public void start(Listener2 listener) {
+    public synchronized void start(Listener2 listener) {
+        ResolutionResult result = getInstances();
+        listener.onResult(result);
+        started = true;
+        // observe instances update
+        executor.scheduleWithFixedDelay(() -> observeDiscovery(listener), 0, 1, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public synchronized void shutdown() {
+        if (this.discovery != null) {
+            try {
+                this.discovery.close();
+            } catch (Exception e) {
+                // todo
+            }
+        }
+        executor.shutdown();
+        started = false;
+    }
+
+    private ResolutionResult getInstances() {
         List<ServiceInstance> instances = this.discovery.getInstances(this.group, this.serviceName);
         List<EquivalentAddressGroup> addressGroups = new ArrayList<>();
         for (ServiceInstance instance : instances) {
@@ -43,19 +74,19 @@ public class Resolver extends NameResolver {
             EquivalentAddressGroup addressGroup = new EquivalentAddressGroup(socketAddress, attributes);
             addressGroups.add(addressGroup);
         }
-        ResolutionResult result = ResolutionResult.newBuilder().setAddresses(addressGroups).build();
-        listener.onResult(result);
+        return ResolutionResult.newBuilder().setAddresses(addressGroups).build();
     }
 
-    @Override
-    public void shutdown() {
-        if (this.discovery != null) {
-            try {
-                this.discovery.close();
-            } catch (Exception e) {
-                // todo
-            }
+    private void observeDiscovery(Listener2 listener) {
+        if (!started) {
+            return;
+        }
+        //
+        if (this.discovery.instancesUpdate()) {
+            logger.warn("service [{}] group[{}] instances update message receive, update instance in resolver now",
+                    serviceName, group);
+            ResolutionResult result = getInstances();
+            listener.onResult(result);
         }
     }
-
 }

@@ -4,12 +4,14 @@ import com.sunpe.mygrpc.base.discovery.Discovery;
 import com.sunpe.mygrpc.base.vo.ServiceInstance;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.curator.x.discovery.ServiceCache;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.apache.curator.x.discovery.ServiceInstanceBuilder;
 import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
+import org.apache.curator.x.discovery.details.ServiceCacheListener;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -18,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ZkServiceDiscovery implements Discovery {
 
@@ -25,7 +29,9 @@ public class ZkServiceDiscovery implements Discovery {
     private final ServiceDiscovery<Payload> discovery;
     private final Map<String, ServiceCache<Payload>> serviceCaches = new ConcurrentHashMap<>();
     private volatile boolean started;
-    public final String basePath = "/grpc/service";
+    public final String basePath = "/mygrpc/service";
+    private final ReentrantLock instanceChangeLock = new ReentrantLock();
+    private final Condition instanceChangeCondition = instanceChangeLock.newCondition();
 
     public ZkServiceDiscovery(URI uri) {
         this.client = zkClient(uri.getAuthority());
@@ -38,7 +44,7 @@ public class ZkServiceDiscovery implements Discovery {
             throw new IllegalStateException("ZkServiceDiscovery is not started");
         }
         String groupServiceName = getGroupServiceName(group, serviceName);
-        Collection<org.apache.curator.x.discovery.ServiceInstance<Payload>> instances = null;
+        Collection<org.apache.curator.x.discovery.ServiceInstance<Payload>> instances;
         try {
             instances = getInstances(groupServiceName);
         } catch (Exception e) {
@@ -54,16 +60,8 @@ public class ZkServiceDiscovery implements Discovery {
     }
 
     private Collection<org.apache.curator.x.discovery.ServiceInstance<Payload>> getInstances(String serviceName) throws Exception {
-        ServiceCache<Payload> cache = serviceCaches.computeIfAbsent(serviceName, s -> {
-            ServiceCache<Payload> serviceCache = discovery.serviceCacheBuilder()
-                    .name(serviceName).build();
-            try {
-                serviceCache.start();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            return serviceCache;
-        });
+        ServiceCache<Payload> cache = serviceCaches.computeIfAbsent(serviceName, this::createServiceCache);
+
         List<org.apache.curator.x.discovery.ServiceInstance<Payload>> instances = cache.getInstances();
         if (instances != null && !instances.isEmpty()) {
             return instances;
@@ -119,6 +117,19 @@ public class ZkServiceDiscovery implements Discovery {
         }
     }
 
+    @Override
+    public boolean instancesUpdate() {
+        instanceChangeLock.lock();
+        try {
+            instanceChangeCondition.await();
+        } catch (InterruptedException e) {
+            // todo
+        } finally {
+            instanceChangeLock.unlock();
+        }
+        return true;
+    }
+
     private CuratorFramework zkClient(String zkServers) {
         return CuratorFrameworkFactory.builder()
                 .connectString(zkServers)
@@ -145,6 +156,31 @@ public class ZkServiceDiscovery implements Discovery {
             builder.payload(new Payload(instance.getWeight()));
         }
         return builder.build();
+    }
+
+    private ServiceCache<Payload> createServiceCache(String serviceName) {
+        ServiceCache<Payload> cache = discovery.serviceCacheBuilder().name(serviceName).build();
+        try {
+            cache.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        cache.addListener(new ServiceCacheListener() {
+            @Override
+            public void cacheChanged() {
+                instanceChangeLock.lock();
+                try {
+                    instanceChangeCondition.signalAll();
+                } finally {
+                    instanceChangeLock.unlock();
+                }
+            }
+
+            @Override
+            public void stateChanged(CuratorFramework client, ConnectionState newState) {
+            }
+        });
+        return cache;
     }
 
     private String getGroupServiceName(String group, String serviceName) {

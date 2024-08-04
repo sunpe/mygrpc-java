@@ -8,7 +8,12 @@ import com.sunpe.mygrpc.base.health.HealthGrpc;
 import com.sunpe.mygrpc.base.utils.IpUtil;
 import com.sunpe.mygrpc.base.vo.GrpcServerConfig;
 import com.sunpe.mygrpc.base.vo.ServiceInstance;
-import io.grpc.*;
+import io.grpc.BindableService;
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+import io.grpc.ServerServiceDefinition;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +58,7 @@ public class GrpcServer {
         if (started) {
             return;
         }
+        logger.info("bind serve [{}] to grpc server", service.bindService().getServiceDescriptor().getName());
         serverBuilder.addService(service);
     }
 

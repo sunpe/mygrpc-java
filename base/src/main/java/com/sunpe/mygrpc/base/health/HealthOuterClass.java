@@ -27,12 +27,12 @@ public final class HealthOuterClass {
   }
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_grpc_health_v1_HealthCheckRequest_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_grpc_health_v1_HealthCheckRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_grpc_health_v1_HealthCheckResponse_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_grpc_health_v1_HealthCheckResponse_fieldAccessorTable;
 
@@ -46,13 +46,11 @@ public final class HealthOuterClass {
     String[] descriptorData = {
       "\n\014health.proto\022\016grpc.health.v1\"%\n\022Health" +
       "CheckRequest\022\017\n\007service\030\001 \001(\t\"\251\001\n\023Health" +
-      "CheckResponse\022A\n\006status\030\001 \001(\01621.grpc.hea" +
-      "lth.v1.HealthCheckResponse.ServingStatus" +
+      "CheckResponse\022A\n\006status\030\001 \001(\01621.grpc.health.v1.HealthCheckResponse.ServingStatus" +
       "\"O\n\rServingStatus\022\013\n\007UNKNOWN\020\000\022\013\n\007SERVIN" +
       "G\020\001\022\017\n\013NOT_SERVING\020\002\022\023\n\017SERVICE_UNKNOWN\020" +
       "\0032\256\001\n\006Health\022P\n\005Check\022\".grpc.health.v1.H" +
-      "ealthCheckRequest\032#.grpc.health.v1.Healt" +
-      "hCheckResponse\022R\n\005Watch\022\".grpc.health.v1" +
+      "ealthCheckRequest\032#.grpc.health.v1.HealthCheckResponse\022R\n\005Watch\022\".grpc.health.v1" +
       ".HealthCheckRequest\032#.grpc.health.v1.Hea" +
       "lthCheckResponse0\001B$\n\035com.sunpe." +
       "mygrpc.healthP\001\210\001\000b\006proto3"

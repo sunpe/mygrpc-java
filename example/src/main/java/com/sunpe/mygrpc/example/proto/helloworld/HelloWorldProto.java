@@ -47,8 +47,7 @@ public final class HelloWorldProto {
       "\n\021hello_world.proto\022\nhelloworld\"\034\n\014Hello" +
       "Request\022\014\n\004name\030\001 \001(\t\" \n\rHelloResponse\022\017" +
       "\n\007message\030\001 \001(\t2S\n\016GreeterService\022A\n\010say" +
-      "Hello\022\030.helloworld.HelloRequest\032\031.hellow" +
-      "orld.HelloResponse\"\000B3\n\036com.sunpe." +
+      "Hello\022\030.helloworld.HelloRequest\032\031.helloworld.HelloResponse\"\000B3\n\036com.sunpe." +
       "mygrpc.exampleB\017HelloWorldProtoP\001b\006proto" +
       "3"
     };

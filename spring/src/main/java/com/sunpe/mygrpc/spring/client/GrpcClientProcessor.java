@@ -1,6 +1,5 @@
 package com.sunpe.mygrpc.spring.client;
 
-import com.sunpe.mygrpc.base.client.GrpcClient;
 import com.sunpe.mygrpc.base.client.GrpcClientFactory;
 import com.sunpe.mygrpc.base.vo.GrpcClientConfig;
 import io.grpc.Channel;
@@ -8,6 +7,8 @@ import io.grpc.stub.AbstractAsyncStub;
 import io.grpc.stub.AbstractBlockingStub;
 import io.grpc.stub.AbstractFutureStub;
 import io.grpc.stub.AbstractStub;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.InvalidPropertyException;
@@ -20,11 +21,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GrpcClientProcessor implements BeanPostProcessor {
 
     private final GrpcClientFactory factory;
     private final ClientProperties properties;
+    private final Map<String, Object> initializedStubs = new ConcurrentHashMap<>();
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public GrpcClientProcessor(ClientProperties properties) {
         this.properties = properties;
@@ -46,6 +52,7 @@ public class GrpcClientProcessor implements BeanPostProcessor {
     }
 
     private GrpcClientFactory createGrpcClientFactory() throws Exception {
+        logger.info("create grpc client factory for registry-[{}]", properties.getRegistry());
         GrpcClientConfig config = GrpcClientConfig.Builder.newBuilder()
                 .withDiscoveryClass(properties.getServiceDiscoveryClass())
                 .withRegistry(properties.getRegistry())
@@ -57,24 +64,26 @@ public class GrpcClientProcessor implements BeanPostProcessor {
     // process field. init grpc stub if it has @GrpcStub annotation in Spring Bean.
     private void processFields(final Class<?> clazz, final Object bean) {
         for (final Field field : clazz.getDeclaredFields()) {
-            final GrpcStub annotation = AnnotationUtils.findAnnotation(field, GrpcStub.class);
+            final GrpcClient annotation = AnnotationUtils.findAnnotation(field, GrpcClient.class);
             if (annotation != null) {
                 ReflectionUtils.makeAccessible(field);
-                ReflectionUtils.setField(field, bean, createStub(field, annotation, field.getType()));
+                Object fieldValue = initializedStubs.computeIfAbsent(annotation.value(),
+                        serviceName -> createStub(field, serviceName, field.getType()));
+                ReflectionUtils.setField(field, bean, fieldValue);
             }
         }
     }
 
-    private Object createStub(Member target, GrpcStub annotation, Class<?> type) {
-        String name = annotation.value();
-        GrpcClient client = factory.create(name);
+    @SuppressWarnings("unchecked")
+    private Object createStub(Member target, String serviceName, Class<?> type) {
+        logger.info("starting create grpc client stub for service-[{}]", serviceName);
+        com.sunpe.mygrpc.base.client.GrpcClient client = factory.create(serviceName);
 
         if (Channel.class.equals(type)) {
             return type.cast(client);
         }
         if (AbstractStub.class.isAssignableFrom(type)) {
-            @SuppressWarnings("unchecked")
-            AbstractStub<?> stub = null;
+            AbstractStub<?> stub;
             try {
                 stub = createStubObject((Class<? extends AbstractStub<?>>) type.asSubclass(AbstractStub.class), client);
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
@@ -98,6 +107,7 @@ public class GrpcClientProcessor implements BeanPostProcessor {
     }
 
     private String getStubConstructorName(Class<? extends AbstractStub<?>> stubType) {
+        // initialize stub. there are 3 types of stub:
         // "newStub",  AbstractAsyncStub
         // "newBlockingStub",  AbstractBlockingStub
         //  newFutureStub AbstractFutureStub
