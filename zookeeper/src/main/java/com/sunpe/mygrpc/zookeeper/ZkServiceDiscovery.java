@@ -70,23 +70,21 @@ public class ZkServiceDiscovery implements Discovery {
     }
 
     @Override
-    public boolean registerInstance(ServiceInstance instance) throws Exception {
+    public void registerInstance(ServiceInstance instance) throws Exception {
         if (!started) {
             throw new IllegalStateException("ZkServiceDiscovery is not started");
         }
         org.apache.curator.x.discovery.ServiceInstance<Payload> serviceInstance = getServiceInstanceBuilder(instance);
         discovery.registerService(serviceInstance);
-        return true;
     }
 
     @Override
-    public boolean unregisterInstance(ServiceInstance instance) throws Exception {
+    public void unregisterInstance(ServiceInstance instance) throws Exception {
         if (!started) {
             throw new IllegalStateException("ZkServiceDiscovery is not started");
         }
         org.apache.curator.x.discovery.ServiceInstance<Payload> serviceInstance = getServiceInstanceBuilder(instance);
         discovery.unregisterService(serviceInstance);
-        return true;
     }
 
     @Override

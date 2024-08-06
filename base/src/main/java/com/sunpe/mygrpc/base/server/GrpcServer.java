@@ -80,7 +80,6 @@ public class GrpcServer {
         logger.warn("grpc server start at [:{}]", server.getPort());
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-            System.err.println("grpc server shutting down");
             logger.warn("grpc server shutting down");
             try {
                 this.deregister(server);
@@ -88,9 +87,14 @@ public class GrpcServer {
             } catch (Exception e) {
                 logger.error("grpc server shut down error", e);
             }
-            System.err.println("server has shut down");
         }));
-        server.awaitTermination();
+        new Thread(() -> {
+            try {
+                server.awaitTermination();
+            } catch (InterruptedException e) {
+                // todo
+            }
+        }).start();
     }
 
     public boolean isRunning() {

@@ -21,7 +21,7 @@ public interface Discovery {
      * @return
      * @throws Exception
      */
-    boolean registerInstance(ServiceInstance instance) throws Exception;
+    void registerInstance(ServiceInstance instance) throws Exception;
 
     /**
      * unregister a service from Discovery
@@ -30,7 +30,7 @@ public interface Discovery {
      * @return
      * @throws Exception
      */
-    boolean unregisterInstance(ServiceInstance instance) throws Exception;
+    void unregisterInstance(ServiceInstance instance) throws Exception;
 
     /**
      * start a Discovery
