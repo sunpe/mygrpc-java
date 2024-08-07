@@ -22,7 +22,7 @@ public class HelloWorldClient {
                 .withDiscoveryClass(ZkServiceDiscovery.class)
                 .build();
         GrpcClientFactory factory = new GrpcClientFactory(config);
-        GrpcClient grpcClient = factory.create("helloworld.GreeterService");
+        GrpcClient grpcClient = factory.create(GreeterServiceGrpc.SERVICE_NAME);
 
         GreeterServiceGrpc.GreeterServiceBlockingStub blockingStub = GreeterServiceGrpc.newBlockingStub(grpcClient);
 

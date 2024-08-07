@@ -14,11 +14,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Documented
 public @interface GrpcClient {
-
-    /**
-     * the grpc service's name want to call
-     *
-     * @return
-     */
-    String value();
 }

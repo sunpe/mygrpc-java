@@ -29,6 +29,7 @@ public class GrpcClientProcessor implements BeanPostProcessor {
     private final GrpcClientFactory factory;
     private final ClientProperties properties;
     private final Map<String, Object> initializedStubs = new ConcurrentHashMap<>();
+    private final String serviceNameField = "SERVICE_NAME";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -66,11 +67,26 @@ public class GrpcClientProcessor implements BeanPostProcessor {
         for (final Field field : clazz.getDeclaredFields()) {
             final GrpcClient annotation = AnnotationUtils.findAnnotation(field, GrpcClient.class);
             if (annotation != null) {
+                String serviceName = getServiceName(field);
                 ReflectionUtils.makeAccessible(field);
-                Object fieldValue = initializedStubs.computeIfAbsent(annotation.value(),
-                        serviceName -> createStub(field, serviceName, field.getType()));
+                Object fieldValue = initializedStubs.computeIfAbsent(serviceName,
+                        sn -> createStub(field, sn, field.getType()));
                 ReflectionUtils.setField(field, bean, fieldValue);
             }
+        }
+    }
+
+    private String getServiceName(Field field) {
+        Class<?> type = field.getType().getDeclaringClass();
+        Field serviceName = ReflectionUtils.findField(type, serviceNameField);
+        if (serviceName == null) {
+            throw new BeanInstantiationException(field.getType(), "SERVICE_NAME in Grpc service class not found");
+        }
+        serviceName.setAccessible(true);
+        try {
+            return (String) serviceName.get(null);
+        } catch (IllegalAccessException e) {
+            throw new BeanInstantiationException(field.getType(), "SERVICE_NAME in Grpc service class not found");
         }
     }
 

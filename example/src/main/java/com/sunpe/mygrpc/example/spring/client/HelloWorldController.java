@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloWorldController {
 
-    @GrpcClient("helloworld.GreeterService")
+    @GrpcClient
     private GreeterServiceGrpc.GreeterServiceBlockingStub blockingStub;
 
     @GetMapping("/hello/{name}")
