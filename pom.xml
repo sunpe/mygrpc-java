@@ -19,17 +19,22 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <grpc.version>1.65.1</grpc.version>
-        <protobuf.version>4.27.2</protobuf.version>
+        <grpc.version>1.66.0</grpc.version>
+        <protobuf.version>4.27.3</protobuf.version>
         <spring.version>5.3.37</spring.version>
         <springboot.version>2.7.18</springboot.version>
         <curator.version>5.7.0</curator.version>
         <zookeeper.version>3.9.2</zookeeper.version>
         <netty.version>4.1.112.Final</netty.version>
         <jackson.version>2.17.2</jackson.version>
+        <guava.version>33.2.1-jre</guava.version>
         <errorprone.version>2.29.2</errorprone.version>
+        <java.annotation.version>1.3.2</java.annotation.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
         <slf4j.version>1.7.36</slf4j.version>
-        <logback.version>1.2.11</logback.version>
+        <logback.version>1.2.13</logback.version>
+        <junit.version>5.10.3</junit.version>
+        <junit-platform.version>1.10.2</junit-platform.version>
     </properties>
 
     <dependencyManagement>
@@ -206,7 +211,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>33.2.1-jre</version>
+                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
@@ -269,10 +274,18 @@
                 <artifactId>error_prone_annotations</artifactId>
                 <version>${errorprone.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>javax.annotation</groupId>
                 <artifactId>javax.annotation-api</artifactId>
-                <version>1.3.2</version>
+                <version>${java.annotation.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -298,25 +311,25 @@
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
-                <version>5.10.3</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
-                <version>5.10.3</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.10.3</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-commons</artifactId>
-                <version>1.10.2</version>
+                <version>${junit-platform.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
