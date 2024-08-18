@@ -30,8 +30,9 @@ public class ZkServiceDiscovery implements Discovery {
     private final Map<String, ServiceCache<Payload>> serviceCaches = new ConcurrentHashMap<>();
     private volatile boolean started;
     public final String basePath = "/mygrpc/service";
-    private final ReentrantLock instanceChangeLock = new ReentrantLock();
-    private final Condition instanceChangeCondition = instanceChangeLock.newCondition();
+    private volatile boolean instancesChanged = false;
+    private final ReentrantLock instancesChangedLock = new ReentrantLock();
+    private final Condition instancesChangedCondition = instancesChangedLock.newCondition();
 
     public ZkServiceDiscovery(URI uri) {
         this.client = zkClient(uri.getAuthority());
@@ -117,13 +118,20 @@ public class ZkServiceDiscovery implements Discovery {
 
     @Override
     public boolean instancesUpdate() {
-        instanceChangeLock.lock();
+        if (instancesChanged) {
+            instancesChanged = false;
+            return true;
+        }
+        instancesChangedLock.lock();
         try {
-            instanceChangeCondition.await();
+            boolean isWaiting = instancesChangedCondition.await(1, TimeUnit.SECONDS);
+            if (!isWaiting) {
+                return false;
+            }
         } catch (InterruptedException e) {
             // todo
         } finally {
-            instanceChangeLock.unlock();
+            instancesChangedLock.unlock();
         }
         return true;
     }
@@ -166,11 +174,12 @@ public class ZkServiceDiscovery implements Discovery {
         cache.addListener(new ServiceCacheListener() {
             @Override
             public void cacheChanged() {
-                instanceChangeLock.lock();
+                instancesChanged = true;
+                instancesChangedLock.lock();
                 try {
-                    instanceChangeCondition.signalAll();
+                    instancesChangedCondition.signalAll();
                 } finally {
-                    instanceChangeLock.unlock();
+                    instancesChangedLock.unlock();
                 }
             }
 

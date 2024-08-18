@@ -2,12 +2,12 @@ package com.sunpe.mygrpc.spring.server;
 
 import com.sunpe.mygrpc.base.server.GrpcServer;
 import com.sunpe.mygrpc.base.vo.GrpcServerConfig;
-import io.grpc.BindableService;
+import io.grpc.ServerServiceDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public class GrpcServerProcessor implements SmartLifecycle {
@@ -43,7 +43,7 @@ public class GrpcServerProcessor implements SmartLifecycle {
 
     private void createAndStartGrpcServer() throws Exception {
         logger.info("start creating grpc server...");
-        Optional<Collection<BindableService>> serviceDefinitions = getGrpcServices();
+        Optional<List<ServerServiceDefinition>> serviceDefinitions = getGrpcServices();
         if (serviceDefinitions.isEmpty()) {
             throw new IllegalStateException("No grpc services found");
         }
@@ -61,7 +61,7 @@ public class GrpcServerProcessor implements SmartLifecycle {
         this.server = server;
     }
 
-    private Optional<Collection<BindableService>> getGrpcServices() {
+    private Optional<List<ServerServiceDefinition>> getGrpcServices() {
         return this.discover.discoverGrpcServices();
     }
 }

@@ -1,6 +1,7 @@
 package com.sunpe.mygrpc.spring.server;
 
 import io.grpc.BindableService;
+import io.grpc.ServerServiceDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -8,10 +9,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class GrpcServiceDiscover implements ApplicationContextAware {
 
@@ -24,16 +24,16 @@ public class GrpcServiceDiscover implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
-    public Optional<Collection<BindableService>> discoverGrpcServices() {
+    public Optional<List<ServerServiceDefinition>> discoverGrpcServices() {
         String[] beanNames = this.applicationContext.getBeanNamesForAnnotation(GrpcService.class);
         if (beanNames.length == 0) {
             return Optional.empty();
         }
-        Set<BindableService> services = new HashSet<>(beanNames.length);
+        List<ServerServiceDefinition> services = new ArrayList<>(beanNames.length);
         for (String beanName : beanNames) {
             BindableService bindableService = this.applicationContext.getBean(beanName, BindableService.class);
             logger.debug("find grpc service definition bean name=[{}]", beanName);
-            services.add(bindableService);
+            services.add(bindableService.bindService());
         }
         return Optional.of(services);
     }

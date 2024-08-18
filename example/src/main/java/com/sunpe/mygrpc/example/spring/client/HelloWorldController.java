@@ -1,8 +1,8 @@
 package com.sunpe.mygrpc.example.spring.client;
 
-import com.sunpe.mygrpc.example.proto.helloworld.GreeterServiceGrpc;
-import com.sunpe.mygrpc.example.proto.helloworld.HelloRequest;
-import com.sunpe.mygrpc.example.proto.helloworld.HelloResponse;
+import com.sunpe.mygrpc.example.helloworld.GreeterServiceGrpc;
+import com.sunpe.mygrpc.example.helloworld.HelloRequest;
+import com.sunpe.mygrpc.example.helloworld.HelloResponse;
 import com.sunpe.mygrpc.spring.client.GrpcClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

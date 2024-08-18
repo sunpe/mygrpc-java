@@ -12,7 +12,6 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +27,8 @@ public class Resolver extends NameResolver {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     Resolver(URI uri, Args args) throws Exception {
-        // target uri scheme://${ip}:${port},${ip}:${port}.../${group}/${service_name}/
+        // target uri scheme://${ip}:${port},${ip}:${port}.../${group}/${service_name}
+        // ?keep_alive=true&keep_alive_time=keep_alive_time&keep_alive_timeout=keep_alive_timeout
         this.target = uri;
         this.discovery = DiscoveryRegistry.getDiscovery(uri);
         this.discovery.start();

@@ -2,9 +2,9 @@ package com.sunpe.mygrpc.example.pure.server;
 
 import com.sunpe.mygrpc.base.server.GrpcServer;
 import com.sunpe.mygrpc.base.vo.GrpcServerConfig;
-import com.sunpe.mygrpc.example.proto.helloworld.GreeterServiceGrpc;
-import com.sunpe.mygrpc.example.proto.helloworld.HelloRequest;
-import com.sunpe.mygrpc.example.proto.helloworld.HelloResponse;
+import com.sunpe.mygrpc.example.helloworld.GreeterServiceGrpc;
+import com.sunpe.mygrpc.example.helloworld.HelloRequest;
+import com.sunpe.mygrpc.example.helloworld.HelloResponse;
 import com.sunpe.mygrpc.zookeeper.ZkServiceDiscovery;
 import io.grpc.stub.StreamObserver;
 

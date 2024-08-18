@@ -3,9 +3,9 @@ package com.sunpe.mygrpc.example.pure.client;
 import com.sunpe.mygrpc.base.client.GrpcClient;
 import com.sunpe.mygrpc.base.client.GrpcClientFactory;
 import com.sunpe.mygrpc.base.vo.GrpcClientConfig;
-import com.sunpe.mygrpc.example.proto.helloworld.GreeterServiceGrpc;
-import com.sunpe.mygrpc.example.proto.helloworld.HelloRequest;
-import com.sunpe.mygrpc.example.proto.helloworld.HelloResponse;
+import com.sunpe.mygrpc.example.helloworld.GreeterServiceGrpc;
+import com.sunpe.mygrpc.example.helloworld.HelloRequest;
+import com.sunpe.mygrpc.example.helloworld.HelloResponse;
 import com.sunpe.mygrpc.zookeeper.ZkServiceDiscovery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ public class HelloWorldClient {
         HelloRequest request = HelloRequest.newBuilder().setName("world").build();
         HelloResponse response = blockingStub.sayHello(request);
         logger.info("Greeting: {}", response.getMessage());
-        grpcClient.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+        grpcClient.shutdownNow().awaitTermination(1, TimeUnit.SECONDS);
     }
 
 }

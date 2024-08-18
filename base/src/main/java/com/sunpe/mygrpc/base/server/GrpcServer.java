@@ -11,6 +11,8 @@ import com.sunpe.mygrpc.base.vo.ServiceInstance;
 import io.grpc.BindableService;
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
+import io.grpc.Grpc;
+import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerServiceDefinition;
@@ -19,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -48,9 +49,11 @@ public class GrpcServer {
         this.ip = IpUtil.getLocalIpV4Address();
         this.port = config.getPort();
         this.discovery = DiscoveryRegistry.getDiscovery(config.getRegistry());
-        this.serverBuilder = ServerBuilder.forPort(port)
+        this.serverBuilder = Grpc.newServerBuilderForPort(port, InsecureServerCredentials.create())
                 .compressorRegistry(CompressorRegistry.getDefaultInstance())
                 .decompressorRegistry(DecompressorRegistry.getDefaultInstance());
+        setParamToBuilder(config);
+
         this.serverBuilder.addService(new HealthChecker());
     }
 
@@ -62,13 +65,11 @@ public class GrpcServer {
         serverBuilder.addService(service);
     }
 
-    public void bindServices(Collection<BindableService> services) {
+    public void bindServices(List<ServerServiceDefinition> services) {
         if (started) {
             return;
         }
-        for (BindableService service : services) {
-            bindService(service);
-        }
+        serverBuilder.addServices(services);
     }
 
     public synchronized void start() throws Exception {
@@ -142,6 +143,24 @@ public class GrpcServer {
 
     private String serviceId(String service) {
         return this.group + ":" + service + ":" + this.ip + ":" + this.port;
+    }
+
+    private void setParamToBuilder(GrpcServerConfig config) {
+        if (config.isKeepAlive() && config.getKeepAliveTime() > 0) {
+            this.serverBuilder.keepAliveTime(config.getKeepAliveTime(), TimeUnit.MILLISECONDS);
+        }
+        if (config.isKeepAlive() && config.getKeepAliveTimeout() > 0) {
+            this.serverBuilder.keepAliveTimeout(config.getKeepAliveTimeout(), TimeUnit.MILLISECONDS);
+        }
+        if (config.getMaxConnectionIdle() > 0) {
+            this.serverBuilder.maxConnectionIdle(config.getMaxConnectionIdle(), TimeUnit.MILLISECONDS);
+        }
+        if (config.getMaxConnectionAge() > 0) {
+            this.serverBuilder.maxConnectionAge(config.getMaxConnectionAge(), TimeUnit.MILLISECONDS);
+        }
+        if (config.getMaxConnectionAgeGrace() > 0) {
+            this.serverBuilder.maxConnectionAgeGrace(config.getMaxConnectionAgeGrace(), TimeUnit.MILLISECONDS);
+        }
     }
 
     static class HealthChecker extends HealthGrpc.HealthImplBase {
